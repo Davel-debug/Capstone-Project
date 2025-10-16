@@ -4,23 +4,19 @@ using UnityEngine.InputSystem;
 public class CameraFollow : MonoBehaviour
 {
     [Header("Sensibilità")]
-    [Range(0.1f, 10f)] public float sensX = 1f;
-    [Range(0.1f, 10f)] public float sensY = 1f;
+    [SerializeField][Range(0.1f, 10f)] private float sensX = 1f;
+    [SerializeField][Range(0.1f, 10f)] private float sensY = 1f;
 
     [Header("Riferimenti")]
-    public Transform orientation;
+    [SerializeField] private Transform orientation; // il corpo/player
 
     [Header("Input System")]
-    public InputActionReference lookAction;
+    [SerializeField] private InputActionReference lookAction;
 
     [Header("Limiti di Rotazione")]
     [Tooltip("Limite minimo (verso l'alto) e massimo (verso il basso) della rotazione verticale.")]
-    public float minVerticalAngle = -90f;
-    public float maxVerticalAngle = 90f;
-
-    [Tooltip("Limite minimo (verso sinistra) e massimo (verso destra) della rotazione orizzontale.")]
-    public float minHorizontalAngle = -180f;
-    public float maxHorizontalAngle = 180f;
+    [SerializeField][Range(-90f, -0.1f)] private float minVerticalAngle = -80f;
+    [SerializeField][Range(0.1f, 90f)] private float maxVerticalAngle = 80f;
 
     private float xRotation;
     private float yRotation;
@@ -28,29 +24,32 @@ public class CameraFollow : MonoBehaviour
     private void OnEnable()
     {
         lookAction.action.Enable();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void OnDisable()
     {
         lookAction.action.Disable();
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
-    void Update()
+    void LateUpdate()
     {
         Vector2 lookInput = lookAction.action.ReadValue<Vector2>();
         float mouseX = lookInput.x * sensX;
         float mouseY = lookInput.y * sensY;
 
-        // Aggiorna rotazioni
+        // Aggiorna rotazioni cumulative
         yRotation += mouseX;
         xRotation -= mouseY;
-
-        // Applica i limiti
         xRotation = Mathf.Clamp(xRotation, minVerticalAngle, maxVerticalAngle);
-        yRotation = Mathf.Clamp(yRotation, minHorizontalAngle, maxHorizontalAngle);
 
-        // Applica le rotazioni
-        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
-        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+        // Ruota solo il corpo sul piano orizzontale (asse Y)
+        orientation.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+
+        // Ruota solo la camera in locale sull'asse X
+        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 }

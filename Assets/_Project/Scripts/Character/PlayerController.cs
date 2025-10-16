@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Transactions;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(GroundChecker))]
@@ -9,16 +10,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runSpeed = 6f;
     [SerializeField] private float rotationSpeed = 10f;
     [SerializeField] private float jumpForce = 7f;
-    [SerializeField] private Transform cameraTransform;
     [SerializeField] private int maxJumpCount = 2;
 
     [Header("Crouch Settings")]
     [SerializeField] private float crouchHeight = 1.0f;
-    [SerializeField] private float standHeight = 2.0f;
+    private float standHeight = 2.0f;
     [SerializeField] private float crouchLerpSpeed = 10f;
+    private float currentHeightTarget;
+
+    [Header("Camera Settings")]
+    [SerializeField] private Transform cameraTransform;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
+
+    private CapsuleCollider _col;
 
     [Header("Debug")]
     [SerializeField] private bool debugLogs = false;
@@ -42,7 +48,7 @@ public class PlayerController : MonoBehaviour
     // Lock inverso per sincronizzare Update / FixedUpdate
     private bool lockActive = false;
 
-    private float currentHeightTarget;
+    
 
     void Awake()
     {
@@ -59,7 +65,18 @@ public class PlayerController : MonoBehaviour
             Debug.LogWarning("Nessuna camera trovata! Assicurati che la tua camera abbia il tag 'MainCamera'.");
         }
 
-        // imposta altezza iniziale
+        _col = GetComponent<CapsuleCollider>();
+        if (_col != null)
+        {
+            standHeight = _col.height;
+            if (debugLogs) Debug.Log($"Altezza iniziale letta dal CapsuleCollider: {standHeight}");
+        }
+        else
+        {
+            Debug.LogWarning("CapsuleCollider non trovato, impossibile determinare l’altezza di stand.");
+        }
+
+        // Imposta altezza iniziale target
         currentHeightTarget = standHeight;
     }
 
@@ -134,12 +151,34 @@ public class PlayerController : MonoBehaviour
         float targetHeight = isCrouching ? crouchHeight : standHeight;
         currentHeightTarget = Mathf.Lerp(currentHeightTarget, targetHeight, Time.fixedDeltaTime * crouchLerpSpeed);
 
-        if (TryGetComponent(out CapsuleCollider col))
+        if (_col != null)
         {
-            col.height = currentHeightTarget;
-            col.center = new Vector3(0, currentHeightTarget / 2f, 0);
+            _col.height = currentHeightTarget;
+            _col.center = new Vector3(0, currentHeightTarget / 2f, 0);
         }
+
+        HandleCameraCrouch(currentHeightTarget, standHeight, crouchLerpSpeed);
     }
+    private void HandleCameraCrouch(float currentHeight, float standHeight, float lerpSpeed)
+    {
+        if (cameraTransform == null) return;
+
+        // Calcola la percentuale dell’altezza attuale rispetto a quella in piedi
+        float crouchRatio = currentHeight / standHeight;
+
+        // Ottieni la posizione locale corrente della camera
+        Vector3 camLocalPos = cameraTransform.localPosition;
+
+        // Altezza target della camera (0.9f per tenerla un po' sotto la testa)
+        float targetCamY = standHeight  * crouchRatio;
+
+        // Interpola verso la nuova altezza
+        camLocalPos.y = Mathf.Lerp(camLocalPos.y, targetCamY, Time.fixedDeltaTime * lerpSpeed);
+
+        // Applica la posizione interpolata
+        cameraTransform.localPosition = camLocalPos;
+    }
+
 
     private void Move()
     {
