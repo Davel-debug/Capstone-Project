@@ -1,13 +1,10 @@
-﻿using System.Runtime.CompilerServices;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(GroundChecker))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-
     [SerializeField] private float walkSpeed = 3f;
     [SerializeField] private float runSpeed = 6f;
     [SerializeField] private float rotationSpeed = 10f;
@@ -15,15 +12,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private int maxJumpCount = 2;
 
-    private bool isCrouching;
-    private bool isFalling;
-    private bool isJumping;
+    [Header("Crouch Settings")]
+    [SerializeField] private float crouchHeight = 1.0f;
+    [SerializeField] private float standHeight = 2.0f;
+    [SerializeField] private float crouchLerpSpeed = 10f;
 
-
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
 
     [Header("Debug")]
     [SerializeField] private bool debugLogs = false;
-
 
     private Rigidbody _rb;
     private GroundChecker _groundCheck;
@@ -32,6 +30,19 @@ public class PlayerController : MonoBehaviour
     private float _vertical;
     private int _jumpCount;
     private bool wasGrounded;
+
+    private bool isCrouching;
+    private bool isFalling;
+    private bool isJumping;
+
+    // Richieste da Update
+    private bool jumpRequested = false;
+    private bool crouchRequested = false;
+
+    // Lock inverso per sincronizzare Update / FixedUpdate
+    private bool lockActive = false;
+
+    private float currentHeightTarget;
 
     void Awake()
     {
@@ -47,14 +58,28 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("Nessuna camera trovata! Assicurati che la tua camera abbia il tag 'MainCamera'.");
         }
-    }
 
-    [SerializeField] private Animator animator;
+        // imposta altezza iniziale
+        currentHeightTarget = standHeight;
+    }
 
     void Update()
     {
+        if (lockActive) return; // evita doppie letture durante la fisica
+
+        // Leggi input movimento (solo intenzione)
         _horizontal = Input.GetAxisRaw("Horizontal");
         _vertical = Input.GetAxisRaw("Vertical");
+
+        // Salto richiesto
+        if (Input.GetKeyDown(KeyCode.Space) && _jumpCount < maxJumpCount)
+            jumpRequested = true;
+
+        // Crouch richiesto
+        if (Input.GetKey(KeyCode.LeftShift))
+            crouchRequested = true;
+        else
+            crouchRequested = false;
 
         // Determina se il player sta cadendo
         isFalling = !_groundCheck.IsGrounded && _rb.velocity.y < -0.1f;
@@ -67,89 +92,68 @@ public class PlayerController : MonoBehaviour
         }
 
         wasGrounded = _groundCheck.IsGrounded;
-
-        // Input salto
-        if (Input.GetKeyDown(KeyCode.Space) && _jumpCount < maxJumpCount)
-        {
-            AnimationControl();
-            Jump();
-            _jumpCount++;
-            _groundCheck.TriggerJump();
-            
-            if (debugLogs) Debug.Log("Salto #" + _jumpCount);
-              
-        }
-        // Solo se è a terra e non sta già facendo slide
-        if (_groundCheck.IsGrounded )
-        {
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                isCrouching = true;
-                if (debugLogs) Debug.Log(Input.GetKey(KeyCode.LeftShift));
-            }
-            else
-            {
-                if (debugLogs) Debug.Log(Input.GetKey(KeyCode.LeftShift));
-                isCrouching = false;
-            }
-        }
-        
-        Move();
-        AnimationControl();
     }
 
-    private void Jump()
+    void FixedUpdate()
     {
+        lockActive = true; // blocca update mentre siamo in fisica
+
+        Move();
+        HandleJump();
+        HandleCrouch();
+        AnimationControl();
+
+        lockActive = false; // riabilita update
+    }
+
+    private void HandleJump()
+    {
+        if (!jumpRequested) return;
+
         if (!isCrouching)
         {
             isJumping = true;
-            // Annulla la velocità verticale prima del salto
             Vector3 velocity = _rb.velocity;
             velocity.y = 0;
             _rb.velocity = velocity;
 
             _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            _jumpCount++;
+            _groundCheck.TriggerJump();
+
+            if (debugLogs) Debug.Log("Salto #" + _jumpCount);
         }
-        
+
+        jumpRequested = false;
     }
 
-    private void AnimationControl()
+    private void HandleCrouch()
     {
-        // Aggiorna parametri animator
-        if (animator != null)
+        isCrouching = crouchRequested;
+
+        float targetHeight = isCrouching ? crouchHeight : standHeight;
+        currentHeightTarget = Mathf.Lerp(currentHeightTarget, targetHeight, Time.fixedDeltaTime * crouchLerpSpeed);
+
+        if (TryGetComponent(out CapsuleCollider col))
         {
-            // velocità orizzontale reale
-            float horizontalSpeed = new Vector3(_rb.velocity.x, 0, _rb.velocity.z).magnitude;
-
-            // normalizza in base al runSpeed attuale
-            float normalizedSpeed = Mathf.Clamp(horizontalSpeed / runSpeed, 0f, 1f);
-
-            animator.SetFloat("speed", normalizedSpeed);
-
-            animator.SetBool("isGrounded", _groundCheck.IsGrounded);
-
-            animator.SetBool("isFalling", isFalling);
-
-            animator.SetBool("isCrouching", isCrouching);
-
-            animator.SetBool("isJumping", isJumping);
-            isJumping= false;
-
-
+            col.height = currentHeightTarget;
+            col.center = new Vector3(0, currentHeightTarget / 2f, 0);
         }
     }
+
     private void Move()
     {
         Vector3 inputDir = new Vector3(_horizontal, 0f, _vertical).normalized;
+
         if (inputDir.sqrMagnitude > 0.01f)
         {
             Quaternion camRot = Quaternion.Euler(0, cameraTransform.eulerAngles.y, 0);
             Vector3 moveDir = camRot * inputDir;
 
-            // Usa walk o run in base al tasto Ctrl premuto
+            // Usa walk o run in base al tasto Ctrl
             float currentSpeed = Input.GetKey(KeyCode.LeftControl) ? runSpeed : walkSpeed;
             Vector3 targetVelocity = moveDir * currentSpeed;
-            targetVelocity.y = _rb.velocity.y; // mantieni Y (gravità/salto)
+            targetVelocity.y = _rb.velocity.y; // mantieni la componente Y
 
             _rb.velocity = targetVelocity;
 
@@ -157,7 +161,27 @@ public class PlayerController : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(moveDir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
+        else
+        {
+            // se non ti muovi, mantieni la velocità verticale
+            _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
+        }
     }
 
+    private void AnimationControl()
+    {
+        if (animator != null)
+        {
+            float horizontalSpeed = new Vector3(_rb.velocity.x, 0, _rb.velocity.z).magnitude;
+            float normalizedSpeed = Mathf.Clamp(horizontalSpeed / runSpeed, 0f, 1f);
 
+            animator.SetFloat("speed", normalizedSpeed);
+            animator.SetBool("isGrounded", _groundCheck.IsGrounded);
+            animator.SetBool("isFalling", isFalling);
+            animator.SetBool("isCrouching", isCrouching);
+            animator.SetBool("isJumping", isJumping);
+
+            isJumping = false;
+        }
+    }
 }
