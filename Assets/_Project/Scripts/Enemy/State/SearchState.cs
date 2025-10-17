@@ -5,14 +5,14 @@ public class SearchState : EnemyState
     private Vector3 searchCenter;
     private float searchTime = 10f;
     private float timer;
-    private float stationaryTimer;
+    private float stationaryTimer = EnemyController.stationaryTimer;
     private Vector3 lastPlayerPos;
 
     public SearchState(EnemyBase enemy) : base(enemy) { }
 
     public override void Enter()
     {
-        searchCenter = AIManager.Instance.GetApproximatePlayerPosition();
+        searchCenter = AIManager.Instance.GetApproximateSearchPlayerPosition();
         enemy.agent.SetDestination(searchCenter);
         timer = 0f;
         // enemy.animator.SetFloat("speed", 0.5f); // per procedural animation

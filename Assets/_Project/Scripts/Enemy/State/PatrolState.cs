@@ -27,12 +27,13 @@ public class PatrolState : EnemyState
         // Movimento verso destinazione
         if (!enemy.agent.pathPending && enemy.agent.remainingDistance < 0.5f)
         {
-            waitCounter += Time.deltaTime;
+            /*waitCounter += Time.deltaTime;
             if (waitCounter >= waitTime)
             {
                 PickNewDestination();
                 waitCounter = 0;
-            }
+            }*/
+            PickNewDestination();
         }
 
         // Aggiorna parametro speed per procedural animation
