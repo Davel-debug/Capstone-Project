@@ -109,4 +109,17 @@ public class InventorySystem : MonoBehaviour
         if (equippedIndex >= 0)
             EquipItem(equippedIndex);
     }
+    public bool TransferItemTo(InventorySystem target, InventoryItemData data, int amount = 1)
+    {
+        InventoryItem item = Get(data);
+        if (item == null || item.stackSize < amount)
+            return false;
+
+        for (int i = 0; i < amount; i++)
+            Remove(data);
+
+        target.Add(data);
+        return true;
+    }
+
 }
