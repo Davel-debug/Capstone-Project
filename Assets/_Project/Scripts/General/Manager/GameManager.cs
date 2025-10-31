@@ -16,7 +16,8 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded; 
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            CursorManager.UnlockCursor();
         }
         else
         {
@@ -28,16 +29,22 @@ public class GameManager : MonoBehaviour
         // Ogni volta che carichi una scena, resetta lo stato di morte
         isPlayerDead = false;
 
-        // Riattiva il controller del player se presente
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
+        if (scene.name.Contains("Level"))
         {
-            var controller = player.GetComponent<PlayerController>();
-            if (controller != null)
-                controller.enabled = true;
+            if (AIManager.Instance != null)
+            {
+                AIManager.Instance.activeTracking = true;
+            }
+        }
+        else
+        {
+            if (AIManager.Instance != null)
+                AIManager.Instance.activeTracking = false;
         }
     }
-    public void OnPlayerDeath(float delay = 2f)
+
+
+public void OnPlayerDeath(float delay = 2f)
     {
         if (isPlayerDead) return;
 
@@ -66,11 +73,13 @@ public class GameManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
+        CursorManager.UnlockCursor();
         SceneManager.LoadScene("MainMenu");
     }
 
     public void LoadLevel(int levelIndex)
     {
+        CursorManager.LockCursor();
         SceneManager.LoadScene(levelIndex);
     }
 
@@ -78,23 +87,34 @@ public class GameManager : MonoBehaviour
     {
         int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
         if (nextScene < SceneManager.sceneCountInBuildSettings)
+        {
+            CursorManager.LockCursor();
             SceneManager.LoadScene(nextScene);
+        }   
         else
             LoadVictoryScreen();
     }
 
     public void LoadGameOver()
     {
+        CursorManager.UnlockCursor();
         SceneManager.LoadScene("GameOver");
     }
 
     public void LoadVictoryScreen()
     {
+        CursorManager.UnlockCursor();
         SceneManager.LoadScene("Victory");
+    }
+    public void LoadHowToPlay()
+    {
+        CursorManager.UnlockCursor();
+        SceneManager.LoadScene("HowToPlay");
     }
 
     public void RestartLevel()
     {
+        CursorManager.LockCursor();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

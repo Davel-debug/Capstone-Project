@@ -17,6 +17,7 @@ public class AIManager : MonoBehaviour
     private Vector3 lastKnownPosition;
     private Vector3 lastPlayerPosition;
     private float stationaryTimer = 0f;
+    public bool activeTracking = false;
 
     private void Awake()
     {
@@ -35,9 +36,11 @@ public class AIManager : MonoBehaviour
 
     private void UpdatePlayerPosition()
     {
-        if (player == null) return;
+        if (!activeTracking || player == null) return;
+        Debug.LogFormat("Position");
         lastKnownPosition = player.position;
     }
+
 
     // Restituisce posizione con errore casuale (per il Search)
     public Vector3 GetApproximatePlayerPosition()

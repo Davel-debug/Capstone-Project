@@ -80,6 +80,7 @@ GameObject:
   - component: {fileID: 5470499723674359232}
   - component: {fileID: 3975092157901465915}
   - component: {fileID: 1872992098506123163}
+  - component: {fileID: -8534102375514905234}
   m_Layer: 7
   m_Name: KineRBController
   m_TagString: Player
@@ -248,6 +249,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handSlot: {fileID: 358689315181106308}
+--- !u!114 &-8534102375514905234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4003117905881989628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 461cd396e3fc7cc4eb9c92bde05c1b9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Character: {fileID: 1944741252986948285}
+  CharacterCamera: {fileID: 7183091688256176369}
+  fixedDistance: 1
 --- !u!1 &5598522015539358492
 GameObject:
   m_ObjectHideFlags: 0
@@ -1172,6 +1188,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0436b40b7470b124984cba628cbe1035, type: 3}
+--- !u!114 &7183091688256176369 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7618826737878445954, guid: 0436b40b7470b124984cba628cbe1035, type: 3}
+  m_PrefabInstance: {fileID: 726475200231386995}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24092a40b02616e479baeb940325e339, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &8286517401390592228 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8713175501374922647, guid: 0436b40b7470b124984cba628cbe1035, type: 3}
