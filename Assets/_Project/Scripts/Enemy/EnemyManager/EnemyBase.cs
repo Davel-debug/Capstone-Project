@@ -49,6 +49,8 @@ public abstract class EnemyBase : MonoBehaviour
 
         // Stato iniziale 
         SwitchState(new PatrolState(this));
+
+        TimerCountdown.OnTimerFinished += OnTimerExpired;
     }
 
     public void SwitchState(EnemyState newState)
@@ -124,5 +126,18 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         Debug.LogWarning("[EnemyBase] Nessuna posizione valida trovata per il teletrasporto.");
+    }
+
+    private void OnDestroy()
+    {
+        TimerCountdown.OnTimerFinished -= OnTimerExpired;
+    }
+    private void OnTimerExpired()
+    {
+        Debug.Log("[EnemyBase] Timer scaduto: modalità berserk attiva!");
+        if (perception != null)
+        {
+            perception.ForceSeePlayer(true);
+        }
     }
 }

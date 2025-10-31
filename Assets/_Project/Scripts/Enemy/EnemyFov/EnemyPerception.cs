@@ -24,6 +24,8 @@ public class EnemyPerception : MonoBehaviour
     public Vector3 lastKnownPosition;
     public List<Vector3> recentPositions = new();
 
+    private bool forceSeePlayer = false;
+
     private Transform player;
     private float timeSinceLastSeen = Mathf.Infinity;
 
@@ -78,11 +80,21 @@ public class EnemyPerception : MonoBehaviour
         return false;
     }
 
-    public bool CanSeePlayer() => playerVisible;
-
     public bool HasRecentSight() => timeSinceLastSeen < memoryDuration;
 
     public Vector3 GetLastKnownPosition() => lastKnownPosition;
+
+    public void ForceSeePlayer(bool value)
+    {
+        forceSeePlayer = value;
+    }
+
+    public bool CanSeePlayer()
+    {
+        if (forceSeePlayer)
+            return true;
+        return playerVisible;
+    }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()

@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System;
 
 public class TimerCountdown : MonoBehaviour
 {
@@ -20,6 +21,9 @@ public class TimerCountdown : MonoBehaviour
     private bool isRunning = false;
 
     public bool IsFinished { get; private set; } = false;
+
+    // Evento chiamato quando il timer finisce
+    public static event Action OnTimerFinished;
 
     private void Start()
     {
@@ -45,6 +49,9 @@ public class TimerCountdown : MonoBehaviour
                 timerText.gameObject.SetActive(false);
 
             Debug.Log("[TimerCountdown] Timer terminato.");
+
+            // Scatena evento globale
+            OnTimerFinished?.Invoke();
         }
 
         UpdateUI();
@@ -59,16 +66,8 @@ public class TimerCountdown : MonoBehaviour
         timerText.text = $"{minutes:00}:{seconds:00}";
     }
 
-    public void StartTimer()
-    {
-        isRunning = true;
-        IsFinished = false;
-    }
-
-    public void StopTimer()
-    {
-        isRunning = false;
-    }
+    public void StartTimer() => isRunning = true;
+    public void StopTimer() => isRunning = false;
 
     public void ResetTimer(float newTime = -1)
     {
