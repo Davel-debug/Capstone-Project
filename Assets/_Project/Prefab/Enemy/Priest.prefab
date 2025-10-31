@@ -1791,10 +1791,10 @@ MonoBehaviour:
   stepDistance: 2
   minSpeedForSteps: 0.2
   footstepVolume: 0.6
-  patrolLoop: {fileID: 0}
-  searchLoop: {fileID: 0}
-  chaseLoop: {fileID: 0}
-  attackLoop: {fileID: 0}
+  patrolLoop: {fileID: 8300000, guid: 69707cd678d36ee4fb3b9b5f98c09e21, type: 3}
+  searchLoop: {fileID: 8300000, guid: 06a70615e80a7c246acb377b4636ee4e, type: 3}
+  chaseLoop: {fileID: 8300000, guid: 1dc00dc757018a340821f7184bbd750a, type: 3}
+  attackLoop: {fileID: 8300000, guid: bddde8a4eec915347955117ec6c07456, type: 3}
   backgroundVolume: 0.4
   movementSource: {fileID: 891539373571194561}
   stateSource: {fileID: 4605454429681718613}

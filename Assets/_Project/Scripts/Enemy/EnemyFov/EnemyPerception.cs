@@ -88,6 +88,13 @@ public class EnemyPerception : MonoBehaviour
     {
         forceSeePlayer = value;
     }
+    public void ForceLastSeenPosition(Vector3 pos)
+    {
+        lastKnownPosition = pos;     
+        playerVisible = false;       // non ti vede ora, ma sa dove sei
+        timeSinceLastSeen = 0f;      // azzera la memoria: “ti ha visto da pochissimo”
+    }
+
 
     public bool CanSeePlayer()
     {

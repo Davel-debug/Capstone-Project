@@ -97,7 +97,7 @@ public class EnemyAudioController : MonoBehaviour
                 PlayStateLoop(chaseLoop);
                 break;
             case "Attack":
-                stateSource.PlayOneShot(attackLoop, backgroundVolume);
+                PlayAttack(attackLoop);
                 break;
             default:
                 stateSource.Stop();
@@ -112,6 +112,15 @@ public class EnemyAudioController : MonoBehaviour
         stateSource.clip = clip;
         stateSource.loop = true;
         stateSource.volume = backgroundVolume;
+        stateSource.Play();
+    }
+    private void PlayAttack(AudioClip clip)
+    {
+        if (clip == null) return;
+
+        stateSource.clip = clip;
+        stateSource.loop = false;
+        stateSource.volume = backgroundVolume + 10f;
         stateSource.Play();
     }
 

@@ -37,10 +37,22 @@ public class AIManager : MonoBehaviour
     private void UpdatePlayerPosition()
     {
         if (!activeTracking || player == null) return;
-        Debug.LogFormat("Position");
         lastKnownPosition = player.position;
     }
 
+    // Forza l'aggiornamento della posizione: da chiamare quando il player raccoglie un oggetto "rumoroso"
+    public void AlertEnemiesToPlayerPosition()
+    {
+        if (player == null) return;
+
+        lastKnownPosition = player.position;
+        Debug.Log($"[AIManager] ALERT — Player rilevato in {lastKnownPosition}");
+        var allPerceptions = GameObject.FindObjectsOfType<EnemyPerception>();
+        foreach (var p in allPerceptions)
+        {
+            p.ForceLastSeenPosition(lastKnownPosition);
+        }
+    }
 
     // Restituisce posizione con errore casuale (per il Search)
     public Vector3 GetApproximatePlayerPosition()
