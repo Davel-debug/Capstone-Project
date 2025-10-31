@@ -1468,7 +1468,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &780761152700154019
 Transform:
   m_ObjectHideFlags: 0
@@ -1526,6 +1526,11 @@ MonoBehaviour:
   player: {fileID: 0}
   animator: {fileID: 0}
   useProceduralAnimation: 0
+  stuckCheckInterval: 2
+  stuckDistanceThreshold: 0.3
+  stuckTimeLimit: 6
+  minTeleportDistance: 10
+  maxTeleportDistance: 25
 --- !u!114 &263764989579136265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1539,18 +1544,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewDistance: 15
-  viewAngle: 50
-  raysPerSide: 100
+  horizontalAngle: 60
+  verticalAngle: 45
+  memoryDuration: 3
   obstacleMask:
     serializedVersion: 2
     m_Bits: 2816
   eyePoint: {fileID: 8007076643012954928}
-  showDebugLogs: 0
   showVisionCone: 1
   visionColor: {r: 1, g: 0.8, b: 0, a: 0.25}
-  borderColor: {r: 1, g: 0, b: 0, a: 1}
-  hitColor: {r: 0, g: 1, b: 0, a: 1}
+  seenColor: {r: 0, g: 1, b: 0, a: 1}
+  memoryColor: {r: 0, g: 0, b: 1, a: 1}
   playerVisible: 0
+  lastKnownPosition: {x: 0, y: 0, z: 0}
+  recentPositions: []
 --- !u!195 &4533774563371022214
 NavMeshAgent:
   m_ObjectHideFlags: 0
