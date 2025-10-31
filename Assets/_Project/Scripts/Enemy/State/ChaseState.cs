@@ -10,7 +10,8 @@ public class ChaseState : EnemyState
     {
         Debug.Log("Chase enter");
         enemy.animator.SetTrigger("Chase");
-        
+        enemy.GetComponent<EnemyAudioController>()?.SetState("Chase");
+
         enemy.agent.speed = speed ;
         
         enemy.animator.SetFloat("speed", speed); // per procedural animation
@@ -20,23 +21,26 @@ public class ChaseState : EnemyState
     {
         if (enemy.player == null) return;
 
-        enemy.agent.SetDestination(enemy.player.position);
-
-        // Aggiorna speed per procedural animation
-        // float currentSpeed = enemy.agent.velocity.magnitude;
-        // enemy.animator.SetFloat("speed", currentSpeed);
-
-        if (Vector3.Distance(enemy.transform.position, enemy.player.position) < 2f)
+        if (enemy.perception.CanSeePlayer())
         {
-            enemy.SwitchState(new AttackState(enemy));
+            enemy.agent.SetDestination(enemy.player.position);
         }
-        if (!enemy.perception.CanSeePlayer())
+        else if (enemy.perception.HasRecentSight())
+        {
+            enemy.agent.SetDestination(enemy.perception.GetLastKnownPosition());
+        }
+        else
         {
             enemy.SwitchState(new SearchState(enemy));
             return;
         }
 
+        if (Vector3.Distance(enemy.transform.position, enemy.player.position) < 2f)
+        {
+            enemy.SwitchState(new AttackState(enemy));
+        }
     }
+
 
     public override void Exit()
     {

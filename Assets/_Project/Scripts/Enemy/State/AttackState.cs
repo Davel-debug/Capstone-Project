@@ -13,6 +13,7 @@ public class AttackState : EnemyState
 
         // Esegue trigger di attacco
         enemy.animator.SetTrigger("Attack");
+        enemy.GetComponent<EnemyAudioController>()?.SetState("Attack");
         isAttacking = true;
 
         // Blocca movimento player

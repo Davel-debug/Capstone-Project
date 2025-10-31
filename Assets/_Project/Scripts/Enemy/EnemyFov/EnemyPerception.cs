@@ -1,26 +1,31 @@
 using UnityEngine;
+using System.Collections.Generic;
+using UnityEditor;
 
-[ExecuteAlways]
+
 public class EnemyPerception : MonoBehaviour
 {
     [Header("Sight Settings")]
     public float viewDistance = 20f;
-    [Range(1, 180)] public float viewAngle = 60f;
-    public int raysPerSide = 10;
+    [Range(1, 180)] public float horizontalAngle = 60f;
+    [Range(1, 90)] public float verticalAngle = 45f; // nuovo campo visivo verticale
+    public float memoryDuration = 3f;
     public LayerMask obstacleMask;
     public Transform eyePoint;
 
     [Header("Debug Options")]
-    public bool showDebugLogs = false;
     public bool showVisionCone = true;
-    public Color visionColor = new Color(1f, 0.8f, 0f, 0.25f);
-    public Color borderColor = Color.red;
-    public Color hitColor = Color.green;
+    public Color visionColor = new(1f, 0.8f, 0f, 0.25f);
+    public Color seenColor = Color.green;
+    public Color memoryColor = Color.blue;
 
     [Header("Runtime Info (read-only)")]
     public bool playerVisible;
+    public Vector3 lastKnownPosition;
+    public List<Vector3> recentPositions = new();
 
     private Transform player;
+    private float timeSinceLastSeen = Mathf.Infinity;
 
     private void Start()
     {
@@ -30,69 +35,72 @@ public class EnemyPerception : MonoBehaviour
 
     private void Update()
     {
-        playerVisible = CheckFOV();
+        bool canSee = CheckFOV();
+
+        if (canSee)
+        {
+            playerVisible = true;
+            lastKnownPosition = player.position;
+            timeSinceLastSeen = 0f;
+
+            if (recentPositions.Count == 0 || Vector3.Distance(recentPositions[^1], lastKnownPosition) > 1f)
+                recentPositions.Add(lastKnownPosition);
+        }
+        else
+        {
+            playerVisible = false;
+            timeSinceLastSeen += Time.deltaTime;
+        }
     }
 
     private bool CheckFOV()
     {
         if (player == null) return false;
 
-        bool canSee = false;
         Vector3 origin = eyePoint.position;
         Vector3 playerTarget = player.position + Vector3.up * 1.2f;
         Vector3 toPlayer = playerTarget - origin;
         float distance = toPlayer.magnitude;
+
+        if (distance > viewDistance)
+            return false;
+
         Vector3 dirToPlayer = toPlayer.normalized;
+        float horizontal = Vector3.Angle(eyePoint.forward, new Vector3(dirToPlayer.x, 0, dirToPlayer.z));
+        float vertical = Mathf.Abs(Vector3.SignedAngle(eyePoint.forward, dirToPlayer, eyePoint.right));
 
-        // Verifica angolo base
-        float angleToPlayer = Vector3.Angle(eyePoint.forward, dirToPlayer);
-        if (angleToPlayer < viewAngle / 2f && distance <= viewDistance)
+        if (horizontal < horizontalAngle / 2f && vertical < verticalAngle / 2f)
         {
-            // Controlla se c'è un ostacolo in mezzo
             if (!Physics.Raycast(origin, dirToPlayer, distance, obstacleMask))
-                canSee = true;
+                return true;
         }
 
-        if (showDebugLogs)
-        {
-            Debug.Log($"[EnemyPerception] playerInFOV={canSee}, angle={angleToPlayer:F1}, dist={distance:F1}");
-        }
-
-        return canSee;
+        return false;
     }
 
     public bool CanSeePlayer() => playerVisible;
 
-    private void OnDrawGizmos()
+    public bool HasRecentSight() => timeSinceLastSeen < memoryDuration;
+
+    public Vector3 GetLastKnownPosition() => lastKnownPosition;
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
     {
-        if (!showVisionCone || eyePoint == null) return;
+        if (eyePoint == null) return;
 
         Vector3 origin = eyePoint.position;
-        Gizmos.color = playerVisible ? hitColor : visionColor;
+        Handles.color = new Color(visionColor.r, visionColor.g, visionColor.b, 0.2f);
 
-        // Disegna cerchio raggio di visione
-        Gizmos.DrawWireSphere(origin, viewDistance);
-
-        // Calcola bordi FOV
-        Vector3 leftBoundary = DirFromAngle(-viewAngle / 2, false);
-        Vector3 rightBoundary = DirFromAngle(viewAngle / 2, false);
-
-        Gizmos.color = borderColor;
-        Gizmos.DrawLine(origin, origin + leftBoundary * viewDistance);
-        Gizmos.DrawLine(origin, origin + rightBoundary * viewDistance);
-
-        // Se il player è visibile, disegna una linea verde verso di lui
-        if (playerVisible && player != null)
-        {
-            Gizmos.color = hitColor;
-            Gizmos.DrawLine(origin, player.position + Vector3.up * 1.2f);
-        }
+        // Disegna FOV 3D
+        Handles.DrawSolidArc(
+            origin,
+            Vector3.up,
+            Quaternion.Euler(0, -horizontalAngle / 2f, 0) * eyePoint.forward,
+            horizontalAngle,
+            viewDistance
+        );
     }
+#endif
 
-    public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
-    {
-        if (!angleIsGlobal)
-            angleInDegrees += eyePoint.eulerAngles.y;
-        return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
-    }
 }

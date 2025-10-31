@@ -14,6 +14,7 @@ public class SearchState : EnemyState
     {
         Debug.Log("Search enter");
         enemy.animator.SetTrigger("Search");
+        enemy.GetComponent<EnemyAudioController>()?.SetState("Search");
         searchCenter = AIManager.Instance.GetApproximateSearchPlayerPosition();
         enemy.agent.SetDestination(searchCenter);
         timer = 0f;

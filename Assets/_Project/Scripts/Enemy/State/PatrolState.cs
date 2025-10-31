@@ -12,6 +12,7 @@ public class PatrolState : EnemyState
     {
         Debug.Log("Patrol enter");
         enemy.animator.SetTrigger("Patrol");
+        enemy.GetComponent<EnemyAudioController>()?.SetState("Patrol");
         enemy.agent.speed = speed;
         // Imposta parametro speed per animazioni procedural
         enemy.animator.SetFloat("speed", speed); // da calibrare con procedural
