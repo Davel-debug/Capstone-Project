@@ -1552,7 +1552,7 @@ MonoBehaviour:
   memoryDuration: 3
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 7944
+    m_Bits: 16159
   eyePoint: {fileID: 8007076643012954928}
   showVisionCone: 1
   visionColor: {r: 1, g: 0.8, b: 0, a: 0.25}
