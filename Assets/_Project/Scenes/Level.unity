@@ -399,9 +399,29 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
+      propertyPath: Drag
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
+      propertyPath: JumpUpSpeed
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
       propertyPath: interactIcon
       value: 
       objectReference: {fileID: 1252956769}
+    - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
+      propertyPath: MaxAirMoveSpeed
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
+      propertyPath: MaxStableMoveSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
+      propertyPath: SprintSpeedMultiplier
+      value: 2.5
+      objectReference: {fileID: 0}
     - target: {fileID: 1944741252986948285, guid: dc25ee21e089d794a88d541153dfd7a6, type: 3}
       propertyPath: interactLayers.m_Bits
       value: 15872
