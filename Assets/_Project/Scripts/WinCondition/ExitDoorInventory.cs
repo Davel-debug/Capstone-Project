@@ -75,6 +75,8 @@ public class ExitDoorInventory : Interactable
 
         bool insertedSomething = false;
 
+        
+
         foreach (var slot in requiredItems)
         {
             if (slot.itemData == null) continue;
@@ -95,6 +97,8 @@ public class ExitDoorInventory : Interactable
                     playerInventory.Remove(slot.itemData);
 
                 slot.currentAmount += toTransfer;
+
+                playerInventory.UnequipItem();
                 UpdateSlotUI(slot);
 
                 Debug.Log($"[ExitDoorInventory] Inseriti {toTransfer}x {slot.itemData.displayName}");

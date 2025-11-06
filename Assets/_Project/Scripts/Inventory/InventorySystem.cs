@@ -28,12 +28,20 @@ public class InventorySystem : MonoBehaviour
 
     public InventoryItem Get(InventoryItemData referenceData)
     {
+        // Prima controlla il dizionario (oggetti stackabili)
         if (m_itemDictionary.TryGetValue(referenceData, out InventoryItem value))
-        {
             return value;
+
+        // Poi cerca nella lista (oggetti non stackabili)
+        foreach (var item in inventory)
+        {
+            if (item.data == referenceData)
+                return item;
         }
+
         return null;
     }
+
 
     public bool Add(InventoryItemData referenceData)
     {
