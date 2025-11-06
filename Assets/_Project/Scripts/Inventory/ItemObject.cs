@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(EquipableItem))]
 public class ItemObject : MonoBehaviour
 {
     public InventoryItemData referenceItem;
@@ -11,11 +12,13 @@ public class ItemObject : MonoBehaviour
 
     public void OnHandlePickupItem()
     {
-        InventorySystem.current.Add(referenceItem);
+        if (InventorySystem.current.Add(referenceItem))
+        {
 
-        if (alertsEnemies && AIManager.Instance != null)
-            AIManager.Instance.AlertEnemiesToPlayerPosition();
+            if (alertsEnemies && AIManager.Instance != null)
+                AIManager.Instance.AlertEnemiesToPlayerPosition();
 
-        Destroy(gameObject);
+            Destroy(gameObject);
+        }
     }
 }

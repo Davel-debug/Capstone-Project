@@ -190,7 +190,25 @@ namespace KinematicCharacterController.Examples
             // Clamp input
             Vector3 moveInputVector = Vector3.ClampMagnitude(new Vector3(inputs.MoveAxisRight, 0f, inputs.MoveAxisForward), 1f);
 
-            _sprinting = inputs.SprintHeld && !_isCrouching && Motor.GroundingStatus.IsStableOnGround;
+            // Sistema Stamina
+            var staminaSystem = GetComponent<SprintStaminaSystem>();
+
+            bool canRun = !_isCrouching                             // non è accovacciato
+                          && Motor.GroundingStatus.IsStableOnGround   // è a terra
+                          && !_jumpRequested                          // non sta saltando
+                          && _moveInputVector.sqrMagnitude > 0.1f;    // si sta muovendo
+
+            if (inputs.SprintHeld && canRun && staminaSystem != null && staminaSystem.CanSprint)
+            {
+                _sprinting = true;
+                staminaSystem.StartDrain();
+            }
+            else
+            {
+                _sprinting = false;
+                if (staminaSystem != null)
+                    staminaSystem.StopDrain();
+            }
 
             // Calculate camera direction and rotation on the character plane
             Vector3 cameraPlanarDirection = Vector3.ProjectOnPlane(inputs.CameraRotation * Vector3.forward, Motor.CharacterUp).normalized;
@@ -639,7 +657,7 @@ namespace KinematicCharacterController.Examples
                 if (hit.collider.TryGetComponent<ItemObject>(out var item))
                 {
                     item.OnHandlePickupItem();
-                    Debug.Log($"Raccolto: {item.referenceItem.displayName}");
+                    Debug.Log($"Ho provato a raccogliere: {item.referenceItem.displayName}");
                     return;
                 }
 
