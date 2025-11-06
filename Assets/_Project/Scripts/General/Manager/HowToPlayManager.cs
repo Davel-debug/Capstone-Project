@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class HowToPlayManager : MonoBehaviour
 {
@@ -15,33 +16,40 @@ public class HowToPlayManager : MonoBehaviour
     [Header("UI Text (optional)")]
     public TextMeshProUGUI pageCounterText;
 
+    [Header("Settings")]
+    [Tooltip("Tempo minimo tra due click consecutivi.")]
+    public float clickCooldown = 0.3f;
+
     private int currentPage = 0;
+    private bool canClick = true;
 
     private void Start()
     {
         ShowPage(currentPage);
 
         // collega i pulsanti
-        if (nextButton != null) nextButton.onClick.AddListener(NextPage);
-        if (prevButton != null) prevButton.onClick.AddListener(PreviousPage);
+        if (nextButton != null) nextButton.onClick.AddListener(() => TryChangePage(1));
+        if (prevButton != null) prevButton.onClick.AddListener(() => TryChangePage(-1));
     }
 
-    public void NextPage()
+    private void TryChangePage(int direction)
     {
-        if (currentPage < pages.Length - 1)
+        if (!canClick) return;
+        StartCoroutine(ClickCooldownRoutine());
+
+        int newPage = currentPage + direction;
+        if (newPage >= 0 && newPage < pages.Length)
         {
-            currentPage++;
+            currentPage = newPage;
             ShowPage(currentPage);
         }
     }
 
-    public void PreviousPage()
+    private IEnumerator ClickCooldownRoutine()
     {
-        if (currentPage > 0)
-        {
-            currentPage--;
-            ShowPage(currentPage);
-        }
+        canClick = false;
+        yield return new WaitForSeconds(clickCooldown);
+        canClick = true;
     }
 
     private void ShowPage(int index)
