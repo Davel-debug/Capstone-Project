@@ -1,14 +1,13 @@
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
-
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public bool isPlayerDead = false;
 
+    private SceneChanger sceneChanger;
 
     private void Awake()
     {
@@ -24,17 +23,20 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Ogni volta che carichi una scena, resetta lo stato di morte
+        // Reset stato di morte
         isPlayerDead = false;
 
+        // Trova lo SceneChanger nella scena
+        sceneChanger = FindObjectOfType<SceneChanger>();
+
+        // Gestione AI
         if (scene.name.Contains("Level"))
         {
             if (AIManager.Instance != null)
-            {
                 AIManager.Instance.activeTracking = true;
-            }
         }
         else
         {
@@ -43,8 +45,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-public void OnPlayerDeath(float delay = 2f)
+    public void OnPlayerDeath(float delay = 2f)
     {
         if (isPlayerDead) return;
 
@@ -60,66 +61,24 @@ public void OnPlayerDeath(float delay = 2f)
                 controller.enabled = false;
         }
 
-        // Avvia coroutine per caricare il GameOver dopo l’animazione
         StartCoroutine(LoadGameOverDelayed(delay));
     }
 
     private IEnumerator LoadGameOverDelayed(float delay)
     {
         yield return new WaitForSeconds(delay);
-        LoadGameOver();
-    }
 
-
-    public void LoadMainMenu()
-    {
-        CursorManager.UnlockCursor();
-        SceneManager.LoadScene("MainMenu");
-    }
-
-    public void LoadLevel(int levelIndex)
-    {
-        CursorManager.LockCursor();
-        SceneManager.LoadScene(levelIndex);
-    }
-
-    public void LoadNextLevel()
-    {
-        int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
-        if (nextScene < SceneManager.sceneCountInBuildSettings)
-        {
-            CursorManager.LockCursor();
-            SceneManager.LoadScene(nextScene);
-        }   
+        if (sceneChanger != null)
+            sceneChanger.LoadGameOver();
         else
-            LoadVictoryScreen();
+            Debug.LogWarning("[GameManager] Nessuno SceneChanger trovato nella scena!");
     }
 
-    public void LoadGameOver()
-    {
-        CursorManager.UnlockCursor();
-        SceneManager.LoadScene("GameOver");
-    }
-
-    public void LoadVictoryScreen()
-    {
-        CursorManager.UnlockCursor();
-        SceneManager.LoadScene("Victory");
-    }
-    public void LoadHowToPlay()
-    {
-        CursorManager.UnlockCursor();
-        SceneManager.LoadScene("HowToPlay");
-    }
-
-    public void RestartLevel()
-    {
-        CursorManager.LockCursor();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void QuitGame()
-    {
-        Application.Quit();
-    }
+    public void LoadMainMenu() => sceneChanger?.LoadMainMenu();
+    public void LoadLevel(int levelIndex) => sceneChanger?.LoadLevel(levelIndex);
+    public void LoadNextLevel() => sceneChanger?.LoadNextLevel();
+    public void LoadVictoryScreen() => sceneChanger?.LoadVictoryScreen();
+    public void LoadHowToPlay() => sceneChanger?.LoadHowToPlay();
+    public void RestartLevel() => sceneChanger?.RestartLevel();
+    public void QuitGame() => sceneChanger?.QuitGame();
 }

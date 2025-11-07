@@ -9,6 +9,10 @@ public class AttackState : EnemyState
     public override void Enter()
     {
         Debug.Log("Attack enter");
+
+        if (enemy.canvas != null)
+            enemy.canvas.SetActive(false);
+
         enemy.agent.isStopped = true;
 
         // Esegue trigger di attacco
@@ -30,6 +34,7 @@ public class AttackState : EnemyState
         if (isAttacking && AnimationFinished("Attack"))
         {
             Debug.Log("Player Morto");
+
             GameManager.Instance.OnPlayerDeath(); // chiama GameManager per la morte del player
             isAttacking = false;
         }

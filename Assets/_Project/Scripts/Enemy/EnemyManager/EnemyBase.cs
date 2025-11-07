@@ -7,7 +7,7 @@ public abstract class EnemyBase : MonoBehaviour
     [HideInInspector] public EnemyPerception perception;
     [HideInInspector] public Transform player;
     [HideInInspector] public Animator animator;
-
+    [HideInInspector] public GameObject canvas;
     protected EnemyState currentState;
 
     [Header("Procedural Animation Settings")]
